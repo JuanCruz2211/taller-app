@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
-import { customers, vehicles, serviceRecords } from "@/db/schema";
+import { customers, vehicles, serviceRecords, workshops } from "@/db/schema";
 import { eq, and, gte } from "drizzle-orm";
 
 export default async function DashboardPage() {
@@ -17,16 +17,21 @@ export default async function DashboardPage() {
     );
   }
 
-  // Query counts for this workshop
-  const workshopId = (session.user as { workshopId?: number | null }).workshopId;
+  // Lookup workshop by the user's email
+  const [workshop] = await db
+    .select({ id: workshops.id })
+    .from(workshops)
+    .where(eq(workshops.email, session.user.email));
 
-  if (!workshopId) {
+  if (!workshop) {
     return (
       <p className="text-zinc-500 dark:text-zinc-400">
-        Tu taller no está configurado correctamente. Contactá al soporte.
+        Tu taller no está configurado. Completá el registro primero.
       </p>
     );
   }
+
+  const workshopId = workshop.id;
 
   const [customerCount, vehicleCount, todayServices] = await Promise.all([
     db.$count(

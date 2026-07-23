@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { workshops } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -35,25 +34,6 @@ export async function POST(request: NextRequest) {
         phone,
       })
       .returning({ id: workshops.id });
-
-    // Link the user to the workshop
-    const { error } = await auth.api.updateUser({
-      headers: request.headers,
-      body: {
-        userId: session.user.id,
-        workshopId: workshop.id,
-      },
-    });
-
-    if (error) {
-      console.error("Failed to link workshop to user:", error);
-      // Clean up: delete the orphan workshop
-      await db.delete(workshops).where(eq(workshops.id, workshop.id));
-      return Response.json(
-        { error: "Error al vincular el taller con el usuario" },
-        { status: 500 }
-      );
-    }
 
     return Response.json({ workshopId: workshop.id }, { status: 201 });
   } catch (error) {
