@@ -11,6 +11,7 @@ import {
 import { eq, and, asc } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DeleteButton from "@/components/delete-button";
 import FinalizeButton from "@/features/services/components/finalize-button";
 import ShareButton from "@/features/reports/components/share-button";
 
@@ -166,6 +167,12 @@ export default async function ServicioDetailPage({ params }: Props) {
               </Link>
 
               <FinalizeButton serviceId={record.id} />
+
+              <DeleteButton
+                deleteUrl={`/api/services/${record.id}`}
+                entityName="servicio"
+                redirectTo="/dashboard/servicios"
+              />
             </>
           )}
 

@@ -2,6 +2,7 @@
 
 import { useReducer, useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { showToast } from "@/lib/toast";
 import type {
   ServiceRecord,
   ServiceFormState,
@@ -300,6 +301,10 @@ export default function ServiceForm({ service }: ServiceFormProps) {
         throw new Error(body.error ?? "Error del servidor");
       }
 
+      showToast(
+        isEditing ? "Servicio actualizado" : "Servicio creado",
+        "success",
+      );
       router.push("/dashboard/servicios");
       router.refresh();
     } catch (err) {

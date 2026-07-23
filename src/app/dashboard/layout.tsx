@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import Toaster from "@/components/toaster";
 
 const navItems = [
   { href: "/dashboard", label: "Inicio", icon: "📊" },
@@ -30,6 +31,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <Toaster />
       {/* Mobile overlay */}
       {sidebarOpen && (
         <button

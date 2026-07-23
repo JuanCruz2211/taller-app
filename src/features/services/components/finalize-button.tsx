@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { showToast } from "@/lib/toast";
 
 interface FinalizeButtonProps {
   serviceId: number;
@@ -34,6 +35,7 @@ export default function FinalizeButton({ serviceId }: FinalizeButtonProps) {
         throw new Error(body.error ?? "Error al finalizar");
       }
 
+      showToast("Servicio finalizado", "success");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error del servidor");

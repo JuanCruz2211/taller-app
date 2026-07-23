@@ -202,6 +202,20 @@ export async function POST(request: Request) {
     return Response.json(vehicle, { status: 201 });
   } catch (error) {
     console.error("Error creating vehicle:", error);
+
+    // PostgreSQL unique constraint violation (duplicate patente)
+    if (
+      (error as { code?: string }).code === "23505" ||
+      (error as { message?: string }).message?.includes("duplicate key") ||
+      (error as { constraint?: string }).constraint ===
+        "vehicles_patente_per_workshop_unique"
+    ) {
+      return Response.json(
+        { error: "Esta patente ya está registrada para otro vehículo" },
+        { status: 409 },
+      );
+    }
+
     return Response.json(
       { error: "Error interno del servidor" },
       { status: 500 },

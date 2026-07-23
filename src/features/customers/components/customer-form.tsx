@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { showToast } from "@/lib/toast";
 import type { Customer } from "../types";
 
 interface FormData {
@@ -85,7 +86,10 @@ export default function CustomerForm({ customer }: CustomerFormProps) {
         throw new Error(body.error ?? "Error del servidor");
       }
 
-      // Redirect to customer list
+      showToast(
+        isEditing ? "Cliente actualizado" : "Cliente creado",
+        "success",
+      );
       router.push("/dashboard/clientes");
       router.refresh();
     } catch (err) {

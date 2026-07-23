@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { showToast } from "@/lib/toast";
 import type { Vehicle } from "../types";
 import type { CustomerOption } from "../types";
 
@@ -168,7 +169,10 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
         throw new Error(body.error ?? "Error del servidor");
       }
 
-      // Redirect to vehicle list
+      showToast(
+        isEditing ? "Vehículo actualizado" : "Vehículo creado",
+        "success",
+      );
       router.push("/dashboard/vehiculos");
       router.refresh();
     } catch (err) {

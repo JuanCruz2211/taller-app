@@ -5,6 +5,7 @@ import { vehicles, customers, serviceRecords } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DeleteButton from "@/components/delete-button";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -104,12 +105,20 @@ export default async function VehiculoDetailPage({ params }: Props) {
           </p>
         </div>
 
-        <Link
-          href={`/dashboard/vehiculos/${row.id}/editar`}
-          className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
-        >
-          Editar vehículo
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/dashboard/vehiculos/${row.id}/editar`}
+            className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
+          >
+            Editar vehículo
+          </Link>
+
+          <DeleteButton
+            deleteUrl={`/api/vehicles/${row.id}`}
+            entityName="vehículo"
+            redirectTo="/dashboard/vehiculos"
+          />
+        </div>
       </div>
 
       {/* Vehicle info card */}

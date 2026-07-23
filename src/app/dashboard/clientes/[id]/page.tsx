@@ -5,6 +5,7 @@ import { customers } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DeleteButton from "@/components/delete-button";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -76,12 +77,20 @@ export default async function ClienteDetailPage({ params }: Props) {
           </p>
         </div>
 
-        <Link
-          href={`/dashboard/clientes/${customer.id}/editar`}
-          className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
-        >
-          Editar cliente
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/dashboard/clientes/${customer.id}/editar`}
+            className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
+          >
+            Editar cliente
+          </Link>
+
+          <DeleteButton
+            deleteUrl={`/api/customers/${customer.id}`}
+            entityName="cliente"
+            redirectTo="/dashboard/clientes"
+          />
+        </div>
       </div>
 
       {/* Contact info card */}
