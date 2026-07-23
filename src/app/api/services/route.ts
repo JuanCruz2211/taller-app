@@ -234,60 +234,56 @@ export async function POST(request: Request) {
       );
     }
 
-    // ── Insert with transaction ───────────────────────────────────
+    // ── Insert (sequential — HTTP driver doesn't support transactions) ──
 
-    const result = await db.transaction(async (tx) => {
-      // Calcular totalCost desde los items
-      const totalCost = items.reduce(
-        (acc: number, item: { partCost?: string; laborCost?: string }) => {
-          const part = parseFloat(item.partCost ?? "0") || 0;
-          const labor = parseFloat(item.laborCost ?? "0") || 0;
-          return acc + part + labor;
-        },
-        0,
-      );
+    // Calcular totalCost desde los items
+    const totalCost = items.reduce(
+      (acc: number, item: { partCost?: string; laborCost?: string }) => {
+        const part = parseFloat(item.partCost ?? "0") || 0;
+        const labor = parseFloat(item.laborCost ?? "0") || 0;
+        return acc + part + labor;
+      },
+      0,
+    );
 
-      const [record] = await tx
-        .insert(serviceRecords)
-        .values({
-          workshopId,
-          customerId,
-          vehicleId,
-          mechanicName: mechanicName.trim(),
-          kmAtService: Number(kmAtService),
-          status: "draft",
-          totalCost: totalCost.toFixed(2),
-          notes: notes?.trim() ?? null,
-        })
-        .returning();
+    const [record] = await db
+      .insert(serviceRecords)
+      .values({
+        workshopId,
+        customerId,
+        vehicleId,
+        mechanicName: mechanicName.trim(),
+        kmAtService: Number(kmAtService),
+        status: "draft",
+        totalCost: totalCost.toFixed(2),
+        notes: notes?.trim() ?? null,
+      })
+      .returning();
 
-      // Insertar items
-      const itemValues = items.map(
-        (item: {
-          description: string;
-          partCost?: string;
-          laborCost?: string;
-          category?: string;
-          nextServiceKm?: string;
-          nextServiceMonths?: string;
-        }, idx: number) => ({
-          serviceRecordId: record.id,
-          description: item.description.trim(),
-          partCost: (parseFloat(item.partCost ?? "0") || 0).toFixed(2),
-          laborCost: (parseFloat(item.laborCost ?? "0") || 0).toFixed(2),
-          category: item.category?.trim() ?? null,
-          nextServiceKm: item.nextServiceKm ? parseInt(item.nextServiceKm, 10) : null,
-          nextServiceMonths: item.nextServiceMonths ? parseInt(item.nextServiceMonths, 10) : null,
-          sortOrder: idx,
-        }),
-      );
+    // Insertar items
+    const itemValues = items.map(
+      (item: {
+        description: string;
+        partCost?: string;
+        laborCost?: string;
+        category?: string;
+        nextServiceKm?: string;
+        nextServiceMonths?: string;
+      }, idx: number) => ({
+        serviceRecordId: record.id,
+        description: item.description.trim(),
+        partCost: (parseFloat(item.partCost ?? "0") || 0).toFixed(2),
+        laborCost: (parseFloat(item.laborCost ?? "0") || 0).toFixed(2),
+        category: item.category?.trim() ?? null,
+        nextServiceKm: item.nextServiceKm ? parseInt(item.nextServiceKm, 10) : null,
+        nextServiceMonths: item.nextServiceMonths ? parseInt(item.nextServiceMonths, 10) : null,
+        sortOrder: idx,
+      }),
+    );
 
-      await tx.insert(serviceItems).values(itemValues);
+    await db.insert(serviceItems).values(itemValues);
 
-      return record;
-    });
-
-    return Response.json(result, { status: 201 });
+    return Response.json(record, { status: 201 });
   } catch (error) {
     console.error("Error creating service:", error);
     return Response.json(

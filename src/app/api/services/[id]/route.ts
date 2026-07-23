@@ -239,49 +239,45 @@ export async function PUT(
       updateData.totalCost = totalCost;
     }
 
-    // Actualizar en transacción si hay items
-    const result = await db.transaction(async (tx) => {
-      const [updated] = await tx
-        .update(serviceRecords)
-        .set(updateData)
-        .where(eq(serviceRecords.id, serviceId))
-        .returning();
+    // Actualizar (sequential — HTTP driver doesn't support transactions)
+    const [updated] = await db
+      .update(serviceRecords)
+      .set(updateData)
+      .where(eq(serviceRecords.id, serviceId))
+      .returning();
 
-      // Si hay items, reemplazar todos
-      if (Array.isArray(items) && items.length > 0) {
-        // Eliminar items existentes
-        await tx
-          .delete(serviceItems)
-          .where(eq(serviceItems.serviceRecordId, serviceId));
+    // Si hay items, reemplazar todos
+    if (Array.isArray(items) && items.length > 0) {
+      // Eliminar items existentes
+      await db
+        .delete(serviceItems)
+        .where(eq(serviceItems.serviceRecordId, serviceId));
 
-        // Insertar nuevos items
-        const itemValues = items.map(
-          (item: {
-            description: string;
-            partCost?: string;
-            laborCost?: string;
-            category?: string;
-            nextServiceKm?: string;
-            nextServiceMonths?: string;
-          }, idx: number) => ({
-            serviceRecordId: serviceId,
-            description: item.description.trim(),
-            partCost: (parseFloat(item.partCost ?? "0") || 0).toFixed(2),
-            laborCost: (parseFloat(item.laborCost ?? "0") || 0).toFixed(2),
-            category: item.category?.trim() ?? null,
-            nextServiceKm: item.nextServiceKm ? parseInt(item.nextServiceKm, 10) : null,
-            nextServiceMonths: item.nextServiceMonths ? parseInt(item.nextServiceMonths, 10) : null,
-            sortOrder: idx,
-          }),
-        );
+      // Insertar nuevos items
+      const itemValues = items.map(
+        (item: {
+          description: string;
+          partCost?: string;
+          laborCost?: string;
+          category?: string;
+          nextServiceKm?: string;
+          nextServiceMonths?: string;
+        }, idx: number) => ({
+          serviceRecordId: serviceId,
+          description: item.description.trim(),
+          partCost: (parseFloat(item.partCost ?? "0") || 0).toFixed(2),
+          laborCost: (parseFloat(item.laborCost ?? "0") || 0).toFixed(2),
+          category: item.category?.trim() ?? null,
+          nextServiceKm: item.nextServiceKm ? parseInt(item.nextServiceKm, 10) : null,
+          nextServiceMonths: item.nextServiceMonths ? parseInt(item.nextServiceMonths, 10) : null,
+          sortOrder: idx,
+        }),
+      );
 
-        await tx.insert(serviceItems).values(itemValues);
-      }
+      await db.insert(serviceItems).values(itemValues);
+    }
 
-      return updated;
-    });
-
-    return Response.json(result);
+    return Response.json(updated);
   } catch (error) {
     console.error("Error updating service:", error);
     return Response.json(
