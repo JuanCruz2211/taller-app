@@ -152,7 +152,7 @@ export async function GET(
       <ServiceReportDocument workshop={pdfWorkshop} service={pdfService} />,
     );
 
-    return new Response(pdfBuffer, {
+    return new Response(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

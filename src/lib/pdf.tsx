@@ -391,7 +391,7 @@ export function ServiceReportDocument({
               return (
                 <View
                   key={item.id}
-                  style={[styles.tableRow, isAlt && styles.tableRowAlt]}
+                  style={[styles.tableRow, isAlt ? styles.tableRowAlt : {}]}
                 >
                   <Text style={[styles.tableCell, styles.colNum]}>
                     {idx + 1}
