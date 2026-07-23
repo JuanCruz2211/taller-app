@@ -15,12 +15,12 @@ Font.register({
   family: "Roboto",
   fonts: [
     {
-      src: "https://fonts.gstatic.com/s/roboto/v47/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2",
-      fontWeight: "normal",
+      src: "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2",
+      fontWeight: 400,
     },
     {
-      src: "https://fonts.gstatic.com/s/roboto/v47/KFOlCnqEu92Fr1MmWUlfBBc4AMP6lQ.woff2",
-      fontWeight: "bold",
+      src: "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2",
+      fontWeight: 700,
     },
   ],
 });
