@@ -26,11 +26,11 @@ Font.register({
   family: "Roboto",
   fonts: [
     {
-      src: `${fontBaseUrl}/fonts/roboto-latin-400-normal.woff2`,
+      src: { url: `${fontBaseUrl}/fonts/roboto-latin-400-normal.woff2`, format: "woff2" },
       fontWeight: 400,
     },
     {
-      src: `${fontBaseUrl}/fonts/roboto-latin-700-normal.woff2`,
+      src: { url: `${fontBaseUrl}/fonts/roboto-latin-700-normal.woff2`, format: "woff2" },
       fontWeight: 700,
     },
   ],
