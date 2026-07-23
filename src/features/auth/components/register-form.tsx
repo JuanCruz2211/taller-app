@@ -113,6 +113,9 @@ export default function RegisterForm() {
         return;
       }
 
+      // Refresh the session so it includes workshopId
+      await authClient.getSession();
+
       // Redirect to dashboard on success
       router.push("/dashboard");
     } catch {

@@ -10,16 +10,19 @@ import {
 } from "@react-pdf/renderer";
 
 // ── Font registration ───────────────────────────────────────────────
+// Use static fonts from @fontsource/roboto instead of Google Fonts CDN
+// because Google now serves Roboto as a variable font (v51+) which
+// @react-pdf/renderer cannot parse (RangeError: Offset outside DataView).
 
 Font.register({
   family: "Roboto",
   fonts: [
     {
-      src: "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2",
+      src: "/fonts/roboto-latin-400-normal.woff2",
       fontWeight: 400,
     },
     {
-      src: "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2",
+      src: "/fonts/roboto-latin-700-normal.woff2",
       fontWeight: 700,
     },
   ],
