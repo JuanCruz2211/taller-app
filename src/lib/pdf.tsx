@@ -8,30 +8,29 @@ import {
   Font,
   Image,
 } from "@react-pdf/renderer";
-import fs from "node:fs";
-import path from "node:path";
 
 // ── Font registration ───────────────────────────────────────────────
-// Use static fonts from @fontsource/roboto instead of Google Fonts CDN
-// because Google now serves Roboto as a variable font (v51+) which
+// Use static fonts served from /public/fonts/ (copied from @fontsource/roboto).
+// Google Fonts now serves Roboto as a variable font (v51+) which
 // @react-pdf/renderer cannot parse (RangeError: Offset outside DataView).
 //
-// We pass font data as Buffer because react-pdf interprets string src as
-// a filesystem path (not a URL), and Vercel serverless has no /fonts/ dir.
+// We use a full URL because react-pdf interprets a string starting with /
+// as a filesystem path (not a URL).
+
+const fontBaseUrl =
+  process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.NEXT_PUBLIC_BETTER_AUTH_URL ?? "http://localhost:3000";
 
 Font.register({
   family: "Roboto",
   fonts: [
     {
-      src: fs.readFileSync(
-        path.join(process.cwd(), "node_modules", "@fontsource", "roboto", "files", "roboto-latin-400-normal.woff2"),
-      ),
+      src: `${fontBaseUrl}/fonts/roboto-latin-400-normal.woff2`,
       fontWeight: 400,
     },
     {
-      src: fs.readFileSync(
-        path.join(process.cwd(), "node_modules", "@fontsource", "roboto", "files", "roboto-latin-700-normal.woff2"),
-      ),
+      src: `${fontBaseUrl}/fonts/roboto-latin-700-normal.woff2`,
       fontWeight: 700,
     },
   ],
