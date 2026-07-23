@@ -5,36 +5,17 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
   Image,
 } from "@react-pdf/renderer";
 
 // ── Font registration ───────────────────────────────────────────────
-// Use static fonts served from /public/fonts/ (copied from @fontsource/roboto).
-// Google Fonts now serves Roboto as a variable font (v51+) which
-// @react-pdf/renderer cannot parse (RangeError: Offset outside DataView).
+// Using standard Helvetica (built-in PDF font) to avoid external font
+// loading issues with @react-pdf/renderer on Vercel serverless.
+// Google Fonts Roboto (v51+) is a variable font that react-pdf cannot
+// parse, and static .woff2 loading from CDN has intermittent issues.
 //
-// We use a full URL because react-pdf interprets a string starting with /
-// as a filesystem path (not a URL).
-
-const fontBaseUrl =
-  process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.NEXT_PUBLIC_BETTER_AUTH_URL ?? "http://localhost:3000";
-
-Font.register({
-  family: "Roboto",
-  fonts: [
-    {
-      src: { url: `${fontBaseUrl}/fonts/roboto-latin-400-normal.woff2`, format: "woff2" },
-      fontWeight: 400,
-    },
-    {
-      src: { url: `${fontBaseUrl}/fonts/roboto-latin-700-normal.woff2`, format: "woff2" },
-      fontWeight: 700,
-    },
-  ],
-});
+// TODO: If custom fonts are needed, bundle them as base64 or read via
+// fetch + ArrayBuffer at render time instead of module-register time.
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -81,7 +62,7 @@ const brandBlue = "#2563eb";
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontFamily: "Roboto",
+    fontFamily: "Helvetica",
     fontSize: 10,
     color: "#1a1a1a",
   },
