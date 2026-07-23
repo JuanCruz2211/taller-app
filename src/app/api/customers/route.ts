@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import { getWorkshopId } from "@/lib/workshop";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { customers } from "@/db/schema";
@@ -19,7 +20,11 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const workshopId = Number(session.user.id);
+    const workshopId = await getWorkshopId(headers());
+
+    if (!workshopId) {
+      return Response.json({ error: "Taller no encontrado" }, { status: 404 });
+    }
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") ?? "";
@@ -85,7 +90,11 @@ export async function POST(request: Request) {
       return Response.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const workshopId = Number(session.user.id);
+    const workshopId = await getWorkshopId(headers());
+
+    if (!workshopId) {
+      return Response.json({ error: "Taller no encontrado" }, { status: 404 });
+    }
     const body = await request.json();
     const { name, phone } = body;
 

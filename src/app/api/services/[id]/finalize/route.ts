@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import { getWorkshopId } from "@/lib/workshop";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { serviceRecords, serviceItems } from "@/db/schema";
@@ -21,7 +22,11 @@ export async function POST(
       return Response.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const workshopId = Number(session.user.id);
+    const workshopId = await getWorkshopId(headers());
+
+    if (!workshopId) {
+      return Response.json({ error: "Taller no encontrado" }, { status: 404 });
+    }
     const { id } = await params;
     const serviceId = parseInt(id, 10);
 
