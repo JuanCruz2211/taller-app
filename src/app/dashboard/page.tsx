@@ -18,7 +18,15 @@ export default async function DashboardPage() {
   }
 
   // Query counts for this workshop
-  const workshopId = Number(session.user.id);
+  const workshopId = (session.user as { workshopId?: number | null }).workshopId;
+
+  if (!workshopId) {
+    return (
+      <p className="text-zinc-500 dark:text-zinc-400">
+        Tu taller no está configurado correctamente. Contactá al soporte.
+      </p>
+    );
+  }
 
   const [customerCount, vehicleCount, todayServices] = await Promise.all([
     db.$count(

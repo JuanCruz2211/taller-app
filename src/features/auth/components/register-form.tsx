@@ -3,17 +3,20 @@
 import { useState, type FormEvent } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { normalizePhone } from "@/lib/phone";
 
 interface FormData {
   workshopName: string;
   email: string;
   password: string;
+  phone: string;
 }
 
 interface FormErrors {
   workshopName?: string;
   email?: string;
   password?: string;
+  phone?: string;
 }
 
 function validate(data: FormData): FormErrors {
@@ -35,6 +38,10 @@ function validate(data: FormData): FormErrors {
     errors.password = "La contraseña debe tener al menos 8 caracteres";
   }
 
+  if (!data.phone.trim()) {
+    errors.phone = "El teléfono es obligatorio";
+  }
+
   return errors;
 }
 
@@ -44,6 +51,7 @@ export default function RegisterForm() {
     workshopName: "",
     email: "",
     password: "",
+    phone: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [serverError, setServerError] = useState("");
@@ -61,22 +69,47 @@ export default function RegisterForm() {
     setServerError("");
 
     try {
-      const { error } = await authClient.signUp.email({
+      const { error: signUpError } = await authClient.signUp.email({
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         name: formData.workshopName.trim(),
       });
 
-      if (error) {
+      if (signUpError) {
         if (
-          error.code === "USER_ALREADY_EXISTS" ||
-          error.message?.toLowerCase().includes("already exists") ||
-          error.message?.toLowerCase().includes("ya existe")
+          signUpError.code === "USER_ALREADY_EXISTS" ||
+          signUpError.message?.toLowerCase().includes("already exists") ||
+          signUpError.message?.toLowerCase().includes("ya existe")
         ) {
           setServerError("Este email ya está registrado");
         } else {
-          setServerError(error.message ?? "Error al registrarse");
+          setServerError(signUpError.message ?? "Error al registrarse");
         }
+        return;
+      }
+
+      // Create workshop entry and link to user
+      let normalizedPhone: string;
+      try {
+        normalizedPhone = normalizePhone(formData.phone.trim());
+      } catch {
+        setServerError("Ingresá un teléfono argentino válido (ej: 11 1234-5678)");
+        return;
+      }
+
+      const workshopResp = await fetch("/api/signup/workshop", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.workshopName.trim(),
+          email: formData.email.trim().toLowerCase(),
+          phone: normalizedPhone,
+        }),
+      });
+
+      if (!workshopResp.ok) {
+        const err = await workshopResp.json();
+        setServerError(err.error ?? "Error al crear el taller");
         return;
       }
 
@@ -142,6 +175,33 @@ export default function RegisterForm() {
         />
         {errors.email && (
           <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+        )}
+      </div>
+
+      {/* Phone */}
+      <div>
+        <label
+          htmlFor="reg-phone"
+          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+        >
+          Teléfono
+        </label>
+        <input
+          id="reg-phone"
+          type="tel"
+          value={formData.phone}
+          onChange={(e) =>
+            setFormData({ ...formData, phone: e.target.value })
+          }
+          className={`mt-1 block w-full rounded-xl border px-4 py-3 text-sm shadow-sm transition-colors placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            errors.phone
+              ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+              : "border-zinc-300 dark:border-zinc-700"
+          } bg-white dark:bg-zinc-900 dark:text-zinc-100`}
+          placeholder="11 1234-5678"
+        />
+        {errors.phone && (
+          <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
         )}
       </div>
 

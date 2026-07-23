@@ -15,6 +15,13 @@
       "when": 1784823381969,
       "tag": "0001_lame_james_howlett",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784823925731,
+      "tag": "0002_gorgeous_joystick",
+      "breakpoints": true
     }
   ]
 }
