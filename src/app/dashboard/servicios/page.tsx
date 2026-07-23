@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { getWorkshopId } from "@/lib/workshop";
 import { db } from "@/lib/db";
 import {
   serviceRecords,
@@ -15,19 +15,15 @@ interface Props {
 }
 
 export default async function ServiciosPage({ searchParams }: Props) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const workshopId = await getWorkshopId(headers());
 
-  if (!session?.user) {
+  if (!workshopId) {
     return (
       <p className="text-zinc-500 dark:text-zinc-400">
         Iniciá sesión para ver los servicios.
       </p>
     );
   }
-
-  const workshopId = Number(session.user.id);
   const sp = await searchParams;
   const search = sp.search ?? "";
   const page = Math.max(1, parseInt(sp.page ?? "1", 10));

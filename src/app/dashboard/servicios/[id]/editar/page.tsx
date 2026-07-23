@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { getWorkshopId } from "@/lib/workshop";
 import { db } from "@/lib/db";
 import { serviceRecords, serviceItems } from "@/db/schema";
 import { eq, and, asc } from "drizzle-orm";
@@ -12,19 +12,15 @@ interface Props {
 }
 
 export default async function EditarServicioPage({ params }: Props) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const workshopId = await getWorkshopId(headers());
 
-  if (!session?.user) {
+  if (!workshopId) {
     return (
       <p className="text-zinc-500 dark:text-zinc-400">
         Iniciá sesión para editar servicios.
       </p>
     );
   }
-
-  const workshopId = Number(session.user.id);
   const { id } = await params;
   const serviceId = parseInt(id, 10);
 
