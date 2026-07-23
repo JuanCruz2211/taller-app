@@ -10,7 +10,7 @@ const navItems = [
   { href: "/dashboard/clientes", label: "Clientes", icon: "👥" },
   { href: "/dashboard/vehiculos", label: "Vehículos", icon: "🚗" },
   { href: "/dashboard/servicios", label: "Servicios", icon: "🔧" },
-  { href: "/historial", label: "Historial", icon: "📋" },
+  { href: "/dashboard/historial", label: "Historial", icon: "📋" },
 ];
 
 export default function DashboardLayout({
