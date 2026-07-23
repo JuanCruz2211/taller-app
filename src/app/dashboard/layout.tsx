@@ -24,7 +24,7 @@ export default function DashboardLayout({
 
   async function handleLogout() {
     await authClient.signOut();
-    router.push("/");
+    router.push("/login");
     router.refresh();
   }
 
