@@ -60,6 +60,7 @@ export default async function ServiciosPage({ searchParams }: Props) {
   const rows = await db
     .select({
         id: serviceRecords.id,
+        serviceNumber: serviceRecords.serviceNumber,
         workshopId: serviceRecords.workshopId,
         vehicleId: serviceRecords.vehicleId,
         customerId: serviceRecords.customerId,
@@ -89,6 +90,7 @@ export default async function ServiciosPage({ searchParams }: Props) {
   const initialData: ServiceListResponse = {
     items: rows.map((row) => ({
       id: row.id,
+      serviceNumber: row.serviceNumber ?? row.id,
       workshopId: row.workshopId,
       vehicleId: row.vehicleId,
       customerId: row.customerId,
