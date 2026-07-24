@@ -64,6 +64,7 @@ export default async function EditarServicioPage({ params }: Props) {
 
   const serviceData: ServiceRecord = {
     id: record.id,
+    serviceNumber: record.serviceNumber ?? record.id,
     workshopId: record.workshopId,
     vehicleId: record.vehicleId,
     customerId: record.customerId,
@@ -95,7 +96,7 @@ export default async function EditarServicioPage({ params }: Props) {
           Editar servicio
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Modificá los datos del servicio #{record.id}
+          Modificá los datos del servicio #{record.serviceNumber ?? record.id}
         </p>
       </div>
 
