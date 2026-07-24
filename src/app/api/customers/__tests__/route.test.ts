@@ -55,6 +55,10 @@ vi.mock("next/headers", () => ({
   headers: vi.fn(() => new Headers()),
 }));
 
+vi.mock("@/lib/workshop", () => ({
+  getWorkshopId: vi.fn().mockResolvedValue(1),
+}));
+
 // Import the mocked auth
 import { auth } from "@/lib/auth";
 

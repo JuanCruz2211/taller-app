@@ -12,6 +12,8 @@ const navItems = [
   { href: "/dashboard/vehiculos", label: "Vehículos", icon: "🚗" },
   { href: "/dashboard/servicios", label: "Servicios", icon: "🔧" },
   { href: "/dashboard/historial", label: "Historial", icon: "📋" },
+  { href: "/dashboard/interesados", label: "Interesados", icon: "📋" },
+  { href: "/dashboard/configuracion", label: "Configuración", icon: "⚙️" },
 ];
 
 export default function DashboardLayout({

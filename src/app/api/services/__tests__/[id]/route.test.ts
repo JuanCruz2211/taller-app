@@ -57,6 +57,10 @@ vi.mock("next/headers", () => ({
   headers: vi.fn(() => new Headers()),
 }));
 
+vi.mock("@/lib/workshop", () => ({
+  getWorkshopId: vi.fn().mockResolvedValue(1),
+}));
+
 // Import the mocked auth
 import { auth } from "@/lib/auth";
 
@@ -259,15 +263,8 @@ describe("PUT /api/services/[id]", () => {
     mockDb.limit.mockResolvedValueOnce([mockRecord]);
 
     const updatedRecord = { ...mockRecord, mechanicName: "Pedro" };
-    mockDb.transaction.mockImplementation(
-      async (cb: (tx: typeof mockDb) => Promise<unknown>) => {
-        const tx = {
-          ...mockDb,
-          returning: vi.fn().mockResolvedValue([updatedRecord]),
-        };
-        return cb(tx);
-      },
-    );
+    // Sequential update — mock returning
+    mockDb.returning.mockResolvedValue([updatedRecord]);
 
     const res = await PUT(
       createRequest("http://localhost:3000/api/services/1", "PUT", {

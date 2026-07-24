@@ -60,6 +60,10 @@ vi.mock("next/headers", () => ({
   headers: vi.fn(() => new Headers()),
 }));
 
+vi.mock("@/lib/workshop", () => ({
+  getWorkshopId: vi.fn().mockResolvedValue(1),
+}));
+
 vi.mock("@react-pdf/renderer", () => ({
   renderToBuffer: mockRenderToBuffer,
   Document: "Document",

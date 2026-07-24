@@ -23,8 +23,6 @@ const mockSession = vi.hoisted(() => ({
   },
 }));
 
-const mockTxResult = vi.hoisted(() => ({}));
-
 const mockDb = vi.hoisted(() => ({
   insert: vi.fn().mockReturnThis(),
   values: vi.fn().mockReturnThis(),
@@ -57,6 +55,10 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("next/headers", () => ({
   headers: vi.fn(() => new Headers()),
+}));
+
+vi.mock("@/lib/workshop", () => ({
+  getWorkshopId: vi.fn().mockResolvedValue(1),
 }));
 
 // Import the mocked auth
@@ -95,7 +97,8 @@ describe("GET /api/services", () => {
 
   it("returns 500 when db throws", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
-    mockDb.$count.mockRejectedValue(new Error("DB error"));
+    // Mock breaks on the first .where() call (inside the count query)
+    mockDb.where.mockRejectedValueOnce(new Error("DB error"));
 
     const res = await GET(new NextRequest("http://localhost:3000/api/services"));
     expect(res.status).toBe(500);
@@ -106,7 +109,8 @@ describe("GET /api/services", () => {
 
   it("returns paginated results on success", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
-    mockDb.$count.mockResolvedValue(1);
+    // First .where() call is for the count query (with joins)
+    mockDb.where.mockResolvedValueOnce([{ total: 1 }]);
     mockDb.orderBy.mockResolvedValue([
       {
         id: 1,
@@ -296,19 +300,8 @@ describe("POST /api/services", () => {
       // Vehicle lookup → returns vehicle
       .mockResolvedValueOnce([{ id: 1, workshopId: 1, patente: "ABC-123" }]);
 
-    // Transaction callback
-    mockDb.transaction.mockImplementation(
-      async (
-        cb: (tx: typeof mockTxResult) => Promise<unknown>,
-      ) => {
-        const tx = {
-          insert: vi.fn().mockReturnThis(),
-          values: vi.fn().mockReturnThis(),
-          returning: vi.fn().mockResolvedValue([mockRecord]),
-        };
-        return cb(tx);
-      },
-    );
+    // Insert service record — mock returning for sequential insert
+    mockDb.returning.mockResolvedValue([mockRecord]);
 
     const res = await POST(
       createPostRequest("http://localhost:3000/api/services", {

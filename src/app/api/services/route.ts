@@ -9,7 +9,7 @@ import {
   customers,
   vehicles,
 } from "@/db/schema";
-import { eq, and, or, ilike, desc, sql } from "drizzle-orm";
+import { eq, and, or, ilike, desc, count } from "drizzle-orm";
 
 // ── GET /api/services ─────────────────────────────────────────────────
 // Lista paginada de services del taller autenticado.
@@ -56,12 +56,17 @@ export async function GET(request: NextRequest) {
 
     const where = and(...baseConditions);
 
-    // Count total
+    // Count total (manual query with joins — $count doesn't support joins)
     const countWhere = search.trim()
       ? where
       : eq(serviceRecords.workshopId, workshopId);
 
-    const total = await db.$count(serviceRecords, countWhere);
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(serviceRecords)
+      .leftJoin(customers, eq(serviceRecords.customerId, customers.id))
+      .leftJoin(vehicles, eq(serviceRecords.vehicleId, vehicles.id))
+      .where(countWhere);
 
     // Select with joins
     const rows = await db

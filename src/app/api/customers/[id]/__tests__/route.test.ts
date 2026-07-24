@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
-import { GET, PUT, DELETE } from "../../[id]/route";
+import { GET, PUT, DELETE } from "../route";
 
 // ── Mocks ───────────────────────────────────────────────────────────
 
@@ -33,7 +33,6 @@ const mockDb = vi.hoisted(() => ({
   limit: vi.fn().mockReturnThis(),
   offset: vi.fn().mockReturnThis(),
   orderBy: vi.fn().mockReturnThis(),
-  leftJoin: vi.fn().mockReturnThis(),
   $count: vi.fn(),
   update: vi.fn().mockReturnThis(),
   set: vi.fn().mockReturnThis(),
@@ -65,18 +64,18 @@ import { auth } from "@/lib/auth";
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
-function createRequest(url: string, method: string, body?: unknown): NextRequest {
+function createPutRequest(url: string, body: unknown): NextRequest {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new NextRequest(url, {
-    method,
+    method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
+    body: JSON.stringify(body),
   } as any);
 }
 
 // ── Tests ───────────────────────────────────────────────────────────
 
-describe("GET /api/vehicles/[id]", () => {
+describe("GET /api/customers/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -85,7 +84,7 @@ describe("GET /api/vehicles/[id]", () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(null);
 
     const res = await GET(
-      new NextRequest("http://localhost:3000/api/vehicles/1"),
+      new NextRequest("http://localhost:3000/api/customers/1"),
       { params: Promise.resolve({ id: "1" }) },
     );
     expect(res.status).toBe(401);
@@ -98,7 +97,7 @@ describe("GET /api/vehicles/[id]", () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
 
     const res = await GET(
-      new NextRequest("http://localhost:3000/api/vehicles/abc"),
+      new NextRequest("http://localhost:3000/api/customers/abc"),
       { params: Promise.resolve({ id: "abc" }) },
     );
     expect(res.status).toBe(400);
@@ -107,55 +106,46 @@ describe("GET /api/vehicles/[id]", () => {
     expect(body.error).toBe("ID inválido");
   });
 
-  it("returns 404 when vehicle not found", async () => {
+  it("returns 404 when customer not found", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
-    mockDb.leftJoin.mockReturnThis();
     mockDb.limit.mockResolvedValue([]);
 
     const res = await GET(
-      new NextRequest("http://localhost:3000/api/vehicles/999"),
+      new NextRequest("http://localhost:3000/api/customers/999"),
       { params: Promise.resolve({ id: "999" }) },
     );
     expect(res.status).toBe(404);
 
     const body = await res.json();
-    expect(body.error).toBe("Vehículo no encontrado");
+    expect(body.error).toBe("Cliente no encontrado");
   });
 
-  it("returns vehicle with customer data on success", async () => {
+  it("returns customer on success", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
-    mockDb.leftJoin.mockReturnThis();
     mockDb.limit.mockResolvedValue([
       {
         id: 1,
         workshopId: 1,
-        customerId: 1,
-        patente: "ABC-123",
-        brand: "Toyota",
-        model: "Corolla",
-        year: 2020,
-        currentKm: null,
+        name: "Juan Pérez",
+        phone: "+5491144556677",
         createdAt: new Date("2025-01-01"),
         updatedAt: new Date("2025-01-01"),
-        customerName: "Juan Pérez",
-        customerPhone: "+5491144556677",
       },
     ]);
 
     const res = await GET(
-      new NextRequest("http://localhost:3000/api/vehicles/1"),
+      new NextRequest("http://localhost:3000/api/customers/1"),
       { params: Promise.resolve({ id: "1" }) },
     );
     expect(res.status).toBe(200);
 
     const body = await res.json();
-    expect(body.patente).toBe("ABC-123");
-    expect(body.customerName).toBe("Juan Pérez");
-    expect(body.customerPhone).toBe("+5491144556677");
+    expect(body.name).toBe("Juan Pérez");
+    expect(body.phone).toBe("+5491144556677");
   });
 });
 
-describe("PUT /api/vehicles/[id]", () => {
+describe("PUT /api/customers/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -164,8 +154,8 @@ describe("PUT /api/vehicles/[id]", () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(null);
 
     const res = await PUT(
-      createRequest("http://localhost:3000/api/vehicles/1", "PUT", {
-        brand: "Ford",
+      createPutRequest("http://localhost:3000/api/customers/1", {
+        name: "Nuevo Nombre",
       }),
       { params: Promise.resolve({ id: "1" }) },
     );
@@ -179,7 +169,7 @@ describe("PUT /api/vehicles/[id]", () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
 
     const res = await PUT(
-      createRequest("http://localhost:3000/api/vehicles/abc", "PUT", {}),
+      createPutRequest("http://localhost:3000/api/customers/abc", {}),
       { params: Promise.resolve({ id: "abc" }) },
     );
     expect(res.status).toBe(400);
@@ -188,20 +178,20 @@ describe("PUT /api/vehicles/[id]", () => {
     expect(body.error).toBe("ID inválido");
   });
 
-  it("returns 404 when vehicle not found", async () => {
+  it("returns 404 when customer not found", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
     mockDb.limit.mockResolvedValue([]);
 
     const res = await PUT(
-      createRequest("http://localhost:3000/api/vehicles/999", "PUT", {
-        brand: "Ford",
+      createPutRequest("http://localhost:3000/api/customers/999", {
+        name: "Nuevo Nombre",
       }),
       { params: Promise.resolve({ id: "999" }) },
     );
     expect(res.status).toBe(404);
 
     const body = await res.json();
-    expect(body.error).toBe("Vehículo no encontrado");
+    expect(body.error).toBe("Cliente no encontrado");
   });
 
   it("returns 400 when no fields provided", async () => {
@@ -210,19 +200,15 @@ describe("PUT /api/vehicles/[id]", () => {
       {
         id: 1,
         workshopId: 1,
-        customerId: 1,
-        patente: "ABC-123",
-        brand: "Toyota",
-        model: "Corolla",
-        year: 2020,
-        currentKm: null,
+        name: "Juan Pérez",
+        phone: "+5491144556677",
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     ]);
 
     const res = await PUT(
-      createRequest("http://localhost:3000/api/vehicles/1", "PUT", {}),
+      createPutRequest("http://localhost:3000/api/customers/1", {}),
       { params: Promise.resolve({ id: "1" }) },
     );
     expect(res.status).toBe(400);
@@ -231,52 +217,128 @@ describe("PUT /api/vehicles/[id]", () => {
     expect(body.error).toContain("campos");
   });
 
-  it("updates vehicle brand on valid input", async () => {
+  it("returns 400 when name is empty", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
-    // First limit call: get vehicle
-    mockDb.limit.mockResolvedValueOnce([
+    mockDb.limit.mockResolvedValue([
       {
         id: 1,
         workshopId: 1,
-        customerId: 1,
-        patente: "ABC-123",
-        brand: "Toyota",
-        model: "Corolla",
-        year: 2020,
-        currentKm: null,
+        name: "Juan Pérez",
+        phone: "+5491144556677",
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     ]);
 
-    const updatedVehicle = {
+    const res = await PUT(
+      createPutRequest("http://localhost:3000/api/customers/1", {
+        name: "",
+      }),
+      { params: Promise.resolve({ id: "1" }) },
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.error).toContain("nombre");
+  });
+
+  it("returns 400 when phone is invalid", async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
+    mockDb.limit.mockResolvedValue([
+      {
+        id: 1,
+        workshopId: 1,
+        name: "Juan Pérez",
+        phone: "+5491144556677",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+
+    const res = await PUT(
+      createPutRequest("http://localhost:3000/api/customers/1", {
+        phone: "123",
+      }),
+      { params: Promise.resolve({ id: "1" }) },
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.error).toContain("teléfono");
+  });
+
+  it("updates customer name on valid input", async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
+    mockDb.limit.mockResolvedValueOnce([
+      {
+        id: 1,
+        workshopId: 1,
+        name: "Juan Pérez",
+        phone: "+5491144556677",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+
+    const updatedCustomer = {
       id: 1,
       workshopId: 1,
-      customerId: 1,
-      patente: "ABC-123",
-      brand: "Ford",
-      model: "Corolla",
-      year: 2020,
-      currentKm: null,
+      name: "Pedro García",
+      phone: "+5491144556677",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    mockDb.returning.mockResolvedValue([updatedVehicle]);
+    mockDb.returning.mockResolvedValue([updatedCustomer]);
 
     const res = await PUT(
-      createRequest("http://localhost:3000/api/vehicles/1", "PUT", {
-        brand: "Ford",
+      createPutRequest("http://localhost:3000/api/customers/1", {
+        name: "Pedro García",
       }),
       { params: Promise.resolve({ id: "1" }) },
     );
     expect(res.status).toBe(200);
 
     const body = await res.json();
-    expect(body.brand).toBe("Ford");
+    expect(body.name).toBe("Pedro García");
+  });
+
+  it("updates customer phone on valid input", async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
+    mockDb.limit.mockResolvedValueOnce([
+      {
+        id: 1,
+        workshopId: 1,
+        name: "Juan Pérez",
+        phone: "+5491144556677",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+
+    const updatedCustomer = {
+      id: 1,
+      workshopId: 1,
+      name: "Juan Pérez",
+      phone: "+5491155667788",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    mockDb.returning.mockResolvedValue([updatedCustomer]);
+
+    const res = await PUT(
+      createPutRequest("http://localhost:3000/api/customers/1", {
+        phone: "1155667788",
+      }),
+      { params: Promise.resolve({ id: "1" }) },
+    );
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.phone).toBe("+5491155667788");
   });
 });
 
-describe("DELETE /api/vehicles/[id]", () => {
+describe("DELETE /api/customers/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -285,7 +347,7 @@ describe("DELETE /api/vehicles/[id]", () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(null);
 
     const res = await DELETE(
-      new NextRequest("http://localhost:3000/api/vehicles/1"),
+      new NextRequest("http://localhost:3000/api/customers/1"),
       { params: Promise.resolve({ id: "1" }) },
     );
     expect(res.status).toBe(401);
@@ -294,40 +356,49 @@ describe("DELETE /api/vehicles/[id]", () => {
     expect(body.error).toBe("No autorizado");
   });
 
-  it("returns 404 when vehicle not found", async () => {
+  it("returns 400 when id is invalid", async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
+
+    const res = await DELETE(
+      new NextRequest("http://localhost:3000/api/customers/abc"),
+      { params: Promise.resolve({ id: "abc" }) },
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.error).toBe("ID inválido");
+  });
+
+  it("returns 404 when customer not found", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
     mockDb.limit.mockResolvedValue([]);
 
     const res = await DELETE(
-      new NextRequest("http://localhost:3000/api/vehicles/999"),
+      new NextRequest("http://localhost:3000/api/customers/999"),
       { params: Promise.resolve({ id: "999" }) },
     );
     expect(res.status).toBe(404);
 
     const body = await res.json();
-    expect(body.error).toBe("Vehículo no encontrado");
+    expect(body.error).toBe("Cliente no encontrado");
   });
 
-  it("returns 409 when vehicle has services", async () => {
+  it("returns 409 when customer has services", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
     mockDb.limit.mockResolvedValue([
       {
         id: 1,
         workshopId: 1,
-        customerId: 1,
-        patente: "ABC-123",
-        brand: "Toyota",
-        model: "Corolla",
-        year: 2020,
-        currentKm: null,
+        name: "Juan Pérez",
+        phone: "+5491144556677",
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     ]);
-    mockDb.$count.mockResolvedValue(2);
+    mockDb.$count.mockResolvedValue(3);
 
     const res = await DELETE(
-      new NextRequest("http://localhost:3000/api/vehicles/1"),
+      new NextRequest("http://localhost:3000/api/customers/1"),
       { params: Promise.resolve({ id: "1" }) },
     );
     expect(res.status).toBe(409);
@@ -336,18 +407,14 @@ describe("DELETE /api/vehicles/[id]", () => {
     expect(body.error).toContain("servicios");
   });
 
-  it("deletes vehicle when no services exist", async () => {
+  it("deletes customer when no services exist", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
     mockDb.limit.mockResolvedValue([
       {
         id: 1,
         workshopId: 1,
-        customerId: 1,
-        patente: "ABC-123",
-        brand: "Toyota",
-        model: "Corolla",
-        year: 2020,
-        currentKm: null,
+        name: "Juan Pérez",
+        phone: "+5491144556677",
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -355,12 +422,12 @@ describe("DELETE /api/vehicles/[id]", () => {
     mockDb.$count.mockResolvedValue(0);
 
     const res = await DELETE(
-      new NextRequest("http://localhost:3000/api/vehicles/1"),
+      new NextRequest("http://localhost:3000/api/customers/1"),
       { params: Promise.resolve({ id: "1" }) },
     );
     expect(res.status).toBe(200);
 
     const body = await res.json();
-    expect(body.message).toBe("Vehículo eliminado correctamente");
+    expect(body.message).toBe("Cliente eliminado correctamente");
   });
 });
