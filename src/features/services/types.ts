@@ -16,6 +16,7 @@ export interface ServiceRecordItem {
 /** Service record tal como lo devuelve la API. */
 export interface ServiceRecord {
   id: number;
+  serviceNumber: number;
   workshopId: number;
   vehicleId: number;
   customerId: number;

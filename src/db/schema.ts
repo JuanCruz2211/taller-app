@@ -80,6 +80,7 @@ export const vehicles = pgTable(
 
 export const serviceRecords = pgTable("service_records", {
   id: serial("id").primaryKey(),
+  serviceNumber: integer("service_number").notNull(),
   workshopId: integer("workshop_id")
     .notNull()
     .references(() => workshops.id, { onDelete: "cascade" }),

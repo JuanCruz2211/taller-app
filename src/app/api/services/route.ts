@@ -9,7 +9,7 @@ import {
   customers,
   vehicles,
 } from "@/db/schema";
-import { eq, and, or, ilike, desc, count } from "drizzle-orm";
+import { eq, and, or, ilike, desc, count, sql } from "drizzle-orm";
 
 // ── GET /api/services ─────────────────────────────────────────────────
 // Lista paginada de services del taller autenticado.
@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
     const rows = await db
       .select({
         id: serviceRecords.id,
+        serviceNumber: serviceRecords.serviceNumber,
         workshopId: serviceRecords.workshopId,
         vehicleId: serviceRecords.vehicleId,
         customerId: serviceRecords.customerId,
@@ -100,6 +101,7 @@ export async function GET(request: NextRequest) {
 
     const items = rows.map((row) => ({
       id: row.id,
+      serviceNumber: row.serviceNumber ?? row.id,
       workshopId: row.workshopId,
       vehicleId: row.vehicleId,
       customerId: row.customerId,
@@ -241,6 +243,15 @@ export async function POST(request: Request) {
 
     // ── Insert (sequential — HTTP driver doesn't support transactions) ──
 
+    // Calcular el próximo serviceNumber para este taller
+    const [prev] = await db
+      .select({ maxNumber: sql`COALESCE(MAX(service_number), 0)` })
+      .from(serviceRecords)
+      .where(eq(serviceRecords.workshopId, workshopId))
+      .limit(1);
+
+    const nextNumber = Number(prev?.maxNumber ?? 0) + 1;
+
     // Calcular totalCost desde los items
     const totalCost = items.reduce(
       (acc: number, item: { partCost?: string; laborCost?: string }) => {
@@ -261,6 +272,7 @@ export async function POST(request: Request) {
         kmAtService: Number(kmAtService),
         status: "draft",
         totalCost: totalCost.toFixed(2),
+        serviceNumber: nextNumber,
         notes: notes?.trim() ?? null,
       })
       .returning();

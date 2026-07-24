@@ -300,6 +300,9 @@ describe("POST /api/services", () => {
       // Vehicle lookup → returns vehicle
       .mockResolvedValueOnce([{ id: 1, workshopId: 1, patente: "ABC-123" }]);
 
+    // Service number query — no previous services → next is 1
+    mockDb.limit.mockResolvedValueOnce([{ maxNumber: 0 }]);
+
     // Insert service record — mock returning for sequential insert
     mockDb.returning.mockResolvedValue([mockRecord]);
 

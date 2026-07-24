@@ -36,7 +36,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
-            Servicio #{service.id}
+            Servicio #{service.serviceNumber}
           </h2>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             {new Date(service.createdAt).toLocaleDateString("es-AR", {

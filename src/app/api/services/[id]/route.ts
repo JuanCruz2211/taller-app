@@ -17,9 +17,10 @@ async function getServiceOrThrow(
   serviceId: number,
   workshopId: number,
 ) {
-  const [row] = await db
+    const [row] = await db
     .select({
       id: serviceRecords.id,
+      serviceNumber: serviceRecords.serviceNumber,
       workshopId: serviceRecords.workshopId,
       vehicleId: serviceRecords.vehicleId,
       customerId: serviceRecords.customerId,
@@ -100,6 +101,7 @@ export async function GET(
 
     return Response.json({
       id: record.id,
+      serviceNumber: record.serviceNumber ?? record.id,
       workshopId: record.workshopId,
       vehicleId: record.vehicleId,
       customerId: record.customerId,
