@@ -6,7 +6,7 @@ import {
   customers,
   vehicles,
 } from "@/db/schema";
-import { eq, and, or, ilike, desc } from "drizzle-orm";
+import { eq, and, or, ilike, desc, count } from "drizzle-orm";
 import ServiceList from "@/features/services/components/service-list";
 import type { ServiceListResponse } from "@/features/services/types";
 
@@ -50,10 +50,15 @@ export default async function ServiciosPage({ searchParams }: Props) {
     ? where
     : eq(serviceRecords.workshopId, workshopId);
 
-  const [total, rows] = await Promise.all([
-    db.$count(serviceRecords, countWhere),
-    db
-      .select({
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(serviceRecords)
+    .leftJoin(customers, eq(serviceRecords.customerId, customers.id))
+    .leftJoin(vehicles, eq(serviceRecords.vehicleId, vehicles.id))
+    .where(countWhere);
+
+  const rows = await db
+    .select({
         id: serviceRecords.id,
         workshopId: serviceRecords.workshopId,
         vehicleId: serviceRecords.vehicleId,
@@ -79,8 +84,7 @@ export default async function ServiciosPage({ searchParams }: Props) {
       .where(where)
       .limit(limit)
       .offset(offset)
-      .orderBy(desc(serviceRecords.createdAt)),
-  ]);
+      .orderBy(desc(serviceRecords.createdAt));
 
   const initialData: ServiceListResponse = {
     items: rows.map((row) => ({

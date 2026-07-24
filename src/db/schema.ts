@@ -24,8 +24,6 @@ export const serviceStatus = pgEnum("service_status", ["draft", "finalized"]);
 export const workshops = pgTable("workshops", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
   logoUrl: text("logo_url"),
   brandColor: text("brand_color"),
   cuit: text("cuit"),
@@ -127,6 +125,7 @@ export const serviceItems = pgTable("service_items", {
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
+  workshopId: integer("workshop_id").references(() => workshops.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
@@ -180,9 +179,17 @@ export const verification = pgTable("verification", {
 // ──────────────────────────────────────────────
 
 export const workshopsRelations = relations(workshops, ({ many }) => ({
+  users: many(user),
   customers: many(customers),
   vehicles: many(vehicles),
   serviceRecords: many(serviceRecords),
+}));
+
+export const userRelations = relations(user, ({ one }) => ({
+  workshop: one(workshops, {
+    fields: [user.workshopId],
+    references: [workshops.id],
+  }),
 }));
 
 export const customersRelations = relations(customers, ({ one, many }) => ({

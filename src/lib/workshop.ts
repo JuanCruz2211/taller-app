@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { workshops } from "@/db/schema";
+import { user } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 /**
- * Lookup the workshop ID from the authenticated user's email.
+ * Lookup the workshop ID from the authenticated user.
  * Pass `await headers()` from the calling server component.
  */
 export async function getWorkshopId(
@@ -14,14 +14,14 @@ export async function getWorkshopId(
     headers: await headersPromise,
   });
 
-  if (!session?.user?.email) return null;
+  if (!session?.user?.id) return null;
 
-  const [workshop] = await db
-    .select({ id: workshops.id })
-    .from(workshops)
-    .where(eq(workshops.email, session.user.email));
+  const [dbUser] = await db
+    .select({ workshopId: user.workshopId })
+    .from(user)
+    .where(eq(user.id, session.user.id));
 
-  return workshop?.id ?? null;
+  return dbUser?.workshopId ?? null;
 }
 
 /**

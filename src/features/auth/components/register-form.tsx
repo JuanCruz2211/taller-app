@@ -102,7 +102,6 @@ export default function RegisterForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.workshopName.trim(),
-          email: formData.email.trim().toLowerCase(),
           phone: normalizedPhone,
         }),
       });
